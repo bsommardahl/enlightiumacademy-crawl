@@ -1,0 +1,19 @@
+version: "2"
+
+services:
+  app:
+    container_name: beehive-backend
+    build: .
+    image: beehive:latest
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    links:
+      - mongo  
+  mongo:
+    container_name: beehive-mongo
+    image: mongo
+    ports:
+      - "27017:27017"
