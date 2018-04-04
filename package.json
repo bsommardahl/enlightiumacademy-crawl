@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/camilorivera/enlightiumacademy-crawl/issues"
   },
-  "homepage": "https://github.com/camilorivera/enlightiumacademy-crawl#readme"
+  "homepage": "https://github.com/camilorivera/enlightiumacademy-crawl#readme",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "co": "^4.6.0",
+    "request": "^2.85.0"
+  }
 }
