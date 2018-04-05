@@ -1,1 +1,1 @@
-worker: node crawl.js
+worker: npm start
