@@ -11,7 +11,7 @@ let creds = {
 }
 
 let job = {
-    cron = process.env.jobCRON || "*/5 * * * *"
+    "cron" : process.env.jobCRON || "*/5 * * * *"
 }
 
 
