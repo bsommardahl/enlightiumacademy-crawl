@@ -1,9 +1,23 @@
 'use strict';
 const Bluebird = require('bluebird');
-let request = require("request");
-let urls = require("../config/config").urls
+const request = require("request");
+const urls = require("../config/config").urls
+const database = require('../database/dbConfig').database;
+const mongo = require("../database/mongo")
+let assigmentsCollection = 'assigments'
 
 
+let createAssigments = function(payload,db) {
+    return new Bluebird((resolve, reject) => {
+        let dbo = db.db(database);
+        dbo.collection(assigmentsCollection).insertMany(payload, (err) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(payload);
+        });
+    });
+}
 
 let getAssigmentsHelper = function (cookies,_id) {
     return new Bluebird((resolve, reject) => {
@@ -28,18 +42,35 @@ let getAssigmentsHelper = function (cookies,_id) {
     });
 }
 
+let addCreationDate = function(assigments){
+    let creationDate = new Date()
+    assigments = assigments.map(function(assigment){
+        assigment.creationDate = creationDate;
+        assigment.endDate = new Date(assigment.endDate)
+        assigment.startDate = new Date(assigment.startDate)
+        assigment.attemptStartDate = new Date(assigment.attemptStartDate)
+        if(assigment.due) assigment.due = new Date(assigment.due)
+        return assigment
+    })
+    return assigments
+
+}
+
 let getAssigments = Bluebird.coroutine(function* getAssigments(cookies,_id) {
 
- 
+    let db;
     try {
+        db = yield mongo.connect()
         let assigments = yield getAssigmentsHelper(cookies,_id)
+        assigments = addCreationDate(assigments)
+        let _response = yield createAssigments(assigments,db)
         return Bluebird.resolve(assigments);
     } catch (err) {
         return Bluebird.reject(err);
     } finally {
-		/*if (db) {
+		if (db) {
 			db.close();
-		}*/
+		}
 	}
 
     

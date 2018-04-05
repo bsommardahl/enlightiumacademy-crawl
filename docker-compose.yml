@@ -2,18 +2,23 @@ version: "2"
 
 services:
   app:
-    container_name: beehive-backend
+    container_name: enlightiumacademy-crawl
     build: .
-    image: beehive:latest
+    image: enlightiumacademy-crawl:latest
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     ports:
       - "3000:3000"
+    environment:
+      - j_username=sommardahl.emanuel4
+      - j_password=emanuel4
+    depends_on:
+      - mongo     
     links:
       - mongo  
   mongo:
-    container_name: beehive-mongo
+    container_name: enlightiumacademy-mongo
     image: mongo
     ports:
       - "27017:27017"

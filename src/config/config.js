@@ -10,8 +10,13 @@ let creds = {
     "j_password": process.env.j_password
 }
 
+let job = {
+    cron = process.env.jobCRON || "*/5 * * * *"
+}
+
 
 module.exports = {
     urls,
-    creds
+    creds,
+    job
 }
