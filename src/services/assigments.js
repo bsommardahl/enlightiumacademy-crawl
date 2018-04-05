@@ -64,7 +64,7 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies,_id) {
         let assigments = yield getAssigmentsHelper(cookies,_id)
         assigments = addCreationDate(assigments)
         let _response = yield createAssigments(assigments,db)
-        return Bluebird.resolve(assigments);
+        return Bluebird.resolve(_response);
     } catch (err) {
         return Bluebird.reject(err);
     } finally {
