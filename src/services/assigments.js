@@ -62,7 +62,7 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) 
     try {
         db = yield mongo.connect()
         let assignments = yield getAssigmentsHelper(cookies, unitId)
-        let filtered = assignments.filter(x => x.status != "Graded")
+        let filtered = assignments.filter(x => x.status == "Graded")
         filtered.forEach(x => console.log(x.status));
         //console.log("assignments: " + filtered.length)
         if (filtered.length > 0) {
