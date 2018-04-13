@@ -56,18 +56,46 @@ let addCreationDate = function (assigments) {
 
 }
 
+let getExistingAssignments = (db) => {
+    return new Bluebird((resolve, reject) => {
+        let dbo = db.db(database);
+        dbo
+            .collection(assigmentsCollection)
+            .find({})
+            .toArray(function (err, result) {
+                if (err) {
+                    reject(err);
+                }
+                else {
+
+                    resolve(JSON.stringify(result));
+                }
+            })
+
+    });
+};
+
+let uniqueId = (a) => `${a.course}|${a.unit}|${a.title}`;
+
+let getNewlyGraded = (gradedAssignments, allAssignments) => {
+    return gradedAssignments.reduce((arr, assignment) => {
+        const existing = allAssignments.find(x => uniqueId(x) === uniqueId(assignment));
+        if (!existing) arr.push(assignment);
+    }, []);
+};
+
 let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) {
 
     let db;
     try {
         db = yield mongo.connect()
         let assignments = yield getAssigmentsHelper(cookies, unitId)
-        let filtered = assignments.filter(x => x.status == "Graded")
-        filtered.forEach(x => console.log(x.status));
-        //console.log("assignments: " + filtered.length)
-        if (filtered.length > 0) {
-            filtered = addCreationDate(filtered)
-            let _response = yield createAssigments(filtered, db)
+        let gradedAssignments = assignments.filter(x => x.status == "Graded")
+        let existingAssignments = getExistingAssignments(db);
+        let newlyGradedAssignments = getNewlyGraded(existingAssignments, gradedAssignments);
+        if (newlyGradedAssignments.length > 0) {
+            newlyGradedAssignments = addCreationDate(newlyGradedAssignments)
+            let _response = yield createAssigments(newlyGradedAssignments, db)
             return Bluebird.resolve(_response);
         }
         else {
