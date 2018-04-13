@@ -62,7 +62,7 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, _id) {
     try {
         db = yield mongo.connect()
         let assigments = yield getAssigmentsHelper(cookies, _id)
-        assigments = assigments.filter(x => x.status !== "Graded")
+        assigments = assigments.filter(x => x && x.status !== "Graded")
         console.log("assignments: " + assigments.length)
         assigments = addCreationDate(assigments)
         let _response = yield createAssigments(assigments, db)
