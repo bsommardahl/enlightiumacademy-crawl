@@ -7,7 +7,7 @@ const mongo = require("../database/mongo")
 let assigmentsCollection = 'assigments'
 
 
-let createAssigments = function(payload,db) {
+let createAssigments = function (payload, db) {
     return new Bluebird((resolve, reject) => {
         let dbo = db.db(database);
         dbo.collection(assigmentsCollection).insertMany(payload, (err) => {
@@ -19,7 +19,7 @@ let createAssigments = function(payload,db) {
     });
 }
 
-let getAssigmentsHelper = function (cookies,_id) {
+let getAssigmentsHelper = function (cookies, _id) {
     return new Bluebird((resolve, reject) => {
         var Options = {
             method: 'GET',
@@ -31,7 +31,7 @@ let getAssigmentsHelper = function (cookies,_id) {
                 {
                     'Cache-Control': 'no-cache'
                 },
-            formData: { id: _id }    
+            formData: { id: _id }
         }
         request(Options, function (error, response, body) {
             if (error) {
@@ -42,38 +42,39 @@ let getAssigmentsHelper = function (cookies,_id) {
     });
 }
 
-let addCreationDate = function(assigments){
+let addCreationDate = function (assigments) {
     let creationDate = new Date()
-    assigments = assigments.map(function(assigment){
+    assigments = assigments.map(function (assigment) {
         assigment.creationDate = creationDate;
         assigment.endDate = new Date(assigment.endDate)
         assigment.startDate = new Date(assigment.startDate)
         assigment.attemptStartDate = new Date(assigment.attemptStartDate)
-        if(assigment.due) assigment.due = new Date(assigment.due)
+        if (assigment.due) assigment.due = new Date(assigment.due)
         return assigment
     })
     return assigments
 
 }
 
-let getAssigments = Bluebird.coroutine(function* getAssigments(cookies,_id) {
+let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, _id) {
 
     let db;
     try {
         db = yield mongo.connect()
-        let assigments = yield getAssigmentsHelper(cookies,_id)
+        let assigments = yield getAssigmentsHelper(cookies, _id)
+        assignments = assigments.filter(x => x.status !== "Graded")
         assigments = addCreationDate(assigments)
-        let _response = yield createAssigments(assigments,db)
+        let _response = yield createAssigments(assigments, db)
         return Bluebird.resolve(_response);
     } catch (err) {
         return Bluebird.reject(err);
     } finally {
-		if (db) {
-			db.close();
-		}
-	}
+        if (db) {
+            db.close();
+        }
+    }
 
-    
+
 });
 
 
