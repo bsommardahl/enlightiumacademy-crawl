@@ -8,7 +8,7 @@ const database = require('../database/dbConfig').database;
 const mongo = require("../database/mongo")
 let coursesCollection = 'courses'
 
-let createCourses = function(payload,db) {
+let createCourses = function (payload, db) {
     return new Bluebird((resolve, reject) => {
         let dbo = db.db(database);
         dbo.collection(coursesCollection).insertMany(payload, (err) => {
@@ -41,12 +41,12 @@ let getCoursesHelper = function (cookies) {
     });
 }
 
-let addCreationDate = function(courses){
+let addCreationDate = function (courses) {
     let creationDate = new Date()
-    courses = courses.map(function(course){
+    courses = courses.map(function (course) {
         course.creationDate = creationDate;
-        if(course.startDate) course.startDate = new Date(course.startDate)
-        if(course.attemptStartDate) course.attemptStartDate = new Date(course.attemptStartDate)       
+        if (course.startDate) course.startDate = new Date(course.startDate)
+        if (course.attemptStartDate) course.attemptStartDate = new Date(course.attemptStartDate)
         return course
     })
     return courses
@@ -62,17 +62,18 @@ let getCourses = Bluebird.coroutine(function* getCourses() {
         db = yield mongo.connect()
         let courses = yield getCoursesHelper(cookies)
         courses.records = addCreationDate(courses.records)
-        let _response = yield createCourses(courses.records,db)
+        let _response = yield createCourses(courses.records, db)
         for (let record of courses.records) {
+            console.log("UNIT: " + record.title)
             let units = yield unit.getUnits(cookies, record.id)
         }
         return Bluebird.resolve(courses);
     } catch (err) {
         return Bluebird.reject(err);
     } finally {
-		if (db) {
-			db.close();
-		}
+        if (db) {
+            db.close();
+        }
     }
 
 

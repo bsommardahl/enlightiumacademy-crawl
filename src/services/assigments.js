@@ -64,9 +64,14 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) 
         let assignments = yield getAssigmentsHelper(cookies, unitId)
         let filtered = assignments.filter(x => x && x.status !== "Graded")
         console.log("assignments: " + filtered.length)
-        filtered = addCreationDate(filtered)
-        let _response = yield createAssigments(filtered, db)
-        return Bluebird.resolve(_response);
+        if (filtered.length > 0) {
+            filtered = addCreationDate(filtered)
+            let _response = yield createAssigments(filtered, db)
+            return Bluebird.resolve(_response);
+        }
+        else {
+            Bluebird.resolve({});
+        }
     } catch (err) {
         return Bluebird.reject(err);
     } finally {

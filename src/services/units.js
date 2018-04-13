@@ -7,7 +7,7 @@ const database = require('../database/dbConfig').database;
 const mongo = require("../database/mongo")
 let unitsCollection = 'units'
 
-let createUnits = function(payload,db) {
+let createUnits = function (payload, db) {
     return new Bluebird((resolve, reject) => {
         let dbo = db.db(database);
         dbo.collection(unitsCollection).insertMany(payload, (err) => {
@@ -19,19 +19,19 @@ let createUnits = function(payload,db) {
     });
 }
 
-let getUnitsHelper = function (cookies, _id) {
+let getUnitsHelper = function (cookies, courseId) {
     return new Bluebird((resolve, reject) => {
         var Options = {
             method: 'GET',
             followAllRedirects: true,
             jar: cookies,
             url: urls.unitsURL,
-            qs: { id: _id },
+            qs: { id: courseId },
             headers:
                 {
                     'Cache-Control': 'no-cache'
                 },
-            formData: { id: _id }
+            formData: { id: courseId }
         }
         request(Options, function (error, response, body) {
             if (error) {
@@ -42,35 +42,36 @@ let getUnitsHelper = function (cookies, _id) {
     });
 }
 
-let addCreationDate = function(units){
+let addCreationDate = function (units) {
     let creationDate = new Date()
-    units = units.map(function(unit){
+    units = units.map(function (unit) {
         unit.creationDate = creationDate;
-        if(unit.startDate) unit.startDate = new Date(unit.startDate)
+        if (unit.startDate) unit.startDate = new Date(unit.startDate)
         return unit
     })
     return units
 
 }
 
-let getUnits = Bluebird.coroutine(function* getUnits(cookies, _id) {
+let getUnits = Bluebird.coroutine(function* getUnits(cookies, courseId) {
 
     let db;
     try {
         db = yield mongo.connect()
-        let units = yield getUnitsHelper(cookies, _id)
+        let units = yield getUnitsHelper(cookies, courseId)
         units = addCreationDate(units)
-        let _response = yield createUnits(units,db)
+        let _response = yield createUnits(units, db)
         for (let unit of units) {
-            let assigment = yield assigments.getAssigments(cookies,unit.id)
+            console.log("UNIT: " + unit.title);
+            let assigment = yield assigments.getAssigments(cookies, unit.id)
         }
         return Bluebird.resolve(_response);
     } catch (err) {
         return Bluebird.reject(err);
     } finally {
-		if (db) {
-			db.close();
-		}
+        if (db) {
+            db.close();
+        }
     }
 
 
