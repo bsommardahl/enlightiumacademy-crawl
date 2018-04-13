@@ -64,7 +64,7 @@ let getCourses = Bluebird.coroutine(function* getCourses() {
         courses.records = addCreationDate(courses.records)
         let _response = yield createCourses(courses.records, db)
         for (let record of courses.records) {
-            console.log("UNIT: " + record.title)
+            console.log("COURSE: " + record.title)
             let units = yield unit.getUnits(cookies, record.id)
         }
         return Bluebird.resolve(courses);
