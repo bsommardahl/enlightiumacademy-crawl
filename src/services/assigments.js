@@ -7,9 +7,8 @@ const mongo = require("../database/mongo")
 let assigmentsCollection = 'assigments'
 
 
-let createAssigments = function (payload, db) {
+let createAssigments = function (payload, dbo) {
     return new Bluebird((resolve, reject) => {
-        let dbo = db.db(database);
         dbo.collection(assigmentsCollection).insertMany(payload, (err) => {
             if (err) {
                 return reject(err);
@@ -56,9 +55,8 @@ let addCreationDate = function (assigments) {
 
 }
 
-let getExistingAssignments = (db) => {
+let getExistingAssignments = (dbo) => {
     return new Bluebird((resolve, reject) => {
-        let dbo = db.db(database);
         dbo
             .collection(assigmentsCollection)
             .find({})
@@ -89,13 +87,14 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) 
     let db;
     try {
         db = yield mongo.connect()
+        let dbo = db.db(database);
         let assignments = yield getAssigmentsHelper(cookies, unitId)
         let gradedAssignments = assignments.filter(x => x.status == "Graded")
-        let existingAssignments = getExistingAssignments(db);
+        let existingAssignments = yield getExistingAssignments(dbo);
         let newlyGradedAssignments = getNewlyGraded(existingAssignments, gradedAssignments);
         if (newlyGradedAssignments.length > 0) {
             newlyGradedAssignments = addCreationDate(newlyGradedAssignments)
-            let _response = yield createAssigments(newlyGradedAssignments, db)
+            let _response = yield createAssigments(newlyGradedAssignments, dbo)
             return Bluebird.resolve(_response);
         }
         else {
