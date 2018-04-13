@@ -65,7 +65,7 @@ let getExistingAssignments = (dbo) => {
                     reject(err);
                 }
                 else {
-
+                    console.log(result);
                     resolve(JSON.stringify(result));
                 }
             })
@@ -91,7 +91,7 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) 
         let assignments = yield getAssigmentsHelper(cookies, unitId)
         let gradedAssignments = assignments.filter(x => x.status == "Graded")
         let existingAssignments = yield getExistingAssignments(dbo);
-        let newlyGradedAssignments = getNewlyGraded(existingAssignments, gradedAssignments);
+        let newlyGradedAssignments = getNewlyGraded(gradedAssignments, existingAssignments);
         if (newlyGradedAssignments.length > 0) {
             newlyGradedAssignments = addCreationDate(newlyGradedAssignments)
             let _response = yield createAssigments(newlyGradedAssignments, dbo)
