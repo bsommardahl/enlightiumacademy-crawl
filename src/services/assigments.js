@@ -56,16 +56,16 @@ let addCreationDate = function (assigments) {
 
 }
 
-let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, _id) {
+let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) {
 
     let db;
     try {
         db = yield mongo.connect()
-        let assigments = yield getAssigmentsHelper(cookies, _id)
-        assigments = assigments.filter(x => x && x.status !== "Graded")
-        console.log("assignments: " + assigments.length)
-        assigments = addCreationDate(assigments)
-        let _response = yield createAssigments(assigments, db)
+        let assignments = yield getAssigmentsHelper(cookies, unitId)
+        //assignments = assigments.filter(x => x && x.status !== "Graded")
+        console.log("assignments: " + assignments.length)
+        assignments = addCreationDate(assignments)
+        let _response = yield createAssigments(assignments, db)
         return Bluebird.resolve(_response);
     } catch (err) {
         return Bluebird.reject(err);
