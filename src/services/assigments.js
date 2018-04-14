@@ -55,31 +55,36 @@ let addCreationDate = function (assigments) {
 
 }
 
+let existingAssignmentCache = [];
 let getExistingAssignments = (dbo) => {
     return new Bluebird((resolve, reject) => {
-        dbo
-            .collection(assigmentsCollection)
-            .find({})
-            .toArray(function (err, result) {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    console.log(result);
-                    resolve(JSON.stringify(result));
-                }
-            })
-
+        if (existingAssignmentCache.length > 0) {
+            resolve(existingAssignmentCache);
+        }
+        else {
+            dbo
+                .collection(assigmentsCollection)
+                .find({})
+                .toArray(function (err, result) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        existingAssignmentCache = result;
+                        resolve(result);
+                    }
+                })
+        }
     });
 };
 
 let uniqueId = (a) => `${a.course}|${a.unit}|${a.title}`;
 
 let getNewlyGraded = (gradedAssignments, allAssignments) => {
-    return gradedAssignments.reduce((arr, assignment) => {
+    return gradedAssignments.filter(assignment => {
         const existing = allAssignments.find(x => uniqueId(x) === uniqueId(assignment));
-        if (!existing) arr.push(assignment);
-    }, []);
+        return (!existing);
+    });
 };
 
 let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) {
@@ -94,7 +99,8 @@ let getAssigments = Bluebird.coroutine(function* getAssigments(cookies, unitId) 
         let newlyGradedAssignments = getNewlyGraded(gradedAssignments, existingAssignments);
         if (newlyGradedAssignments.length > 0) {
             newlyGradedAssignments = addCreationDate(newlyGradedAssignments)
-            let _response = yield createAssigments(newlyGradedAssignments, dbo)
+            let _response = yield createAssigments(newlyGradedAssignments, dbo);
+            console.log(`${newlyGradedAssignments.length} assignments added.`);
             return Bluebird.resolve(_response);
         }
         else {
